@@ -10,6 +10,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.fazarproject2.ui.permission.PermissionGate
 import com.example.fazarproject2.ui.dashboard.DashboardScreen
+import com.example.fazarproject2.ui.navigation.Dashboard
+import com.example.fazarproject2.ui.navigation.SoundSelector
 import com.example.fazarproject2.ui.sounds.SoundSelectionScreen
 import com.example.fazarproject2.ui.theme.FazarProject2Theme
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,13 +26,13 @@ class MainActivity : ComponentActivity() {
             FazarProject2Theme {
                 PermissionGate {
                     val navController = rememberNavController()
-                    NavHost(navController = navController, startDestination = "dashboard") {
-                        composable("dashboard") {
+                    NavHost(navController = navController, startDestination = Dashboard) {
+                        composable<Dashboard> {
                             DashboardScreen(
-                                onNavigateToSoundSelector = { navController.navigate("sound_selector") }
+                                onNavigateToSoundSelector = { navController.navigate(SoundSelector) }
                             )
                         }
-                        composable("sound_selector") {
+                        composable<SoundSelector> {
                             SoundSelectionScreen(
                                 onBack = { navController.popBackStack() }
                             )

@@ -47,7 +47,7 @@ class DashboardViewModel @Inject constructor(
             if (enabled) {
                 Log.d(TAG, "toggleAlarm: Refreshing sunrise and scheduling")
                 println("$TAG: toggleAlarm: Refreshing sunrise and scheduling")
-                refreshSunriseAndSchedule()
+                refreshSunriseAndSchedule(showToast = true)
             } else {
                 Log.d(TAG, "toggleAlarm: Cancelling alarm")
                 println("$TAG: toggleAlarm: Cancelling alarm")
@@ -67,7 +67,7 @@ class DashboardViewModel @Inject constructor(
             if (updated.isEnabled) {
                 Log.d(TAG, "updateOffset: Alarm is enabled, refreshing sunrise")
                 println("$TAG: updateOffset: Alarm is enabled, refreshing sunrise")
-                refreshSunriseAndSchedule()
+                refreshSunriseAndSchedule(showToast = true)
             }
         }
     }
@@ -82,9 +82,9 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
-    fun refreshSunriseAndSchedule() {
-        Log.d(TAG, "refreshSunriseAndSchedule: Starting")
-        println("$TAG: refreshSunriseAndSchedule: Starting")
+    fun refreshSunriseAndSchedule(showToast: Boolean = false) {
+        Log.d(TAG, "refreshSunriseAndSchedule: Starting, showToast=$showToast")
+        println("$TAG: refreshSunriseAndSchedule: Starting, showToast=$showToast")
         viewModelScope.launch {
             val location = locationTracker.getCurrentLocation()
             if (location == null) {
@@ -120,7 +120,9 @@ class DashboardViewModel @Inject constructor(
 
                 Log.d(TAG, "refreshSunriseAndSchedule: Alarm scheduled for epoch $triggerTimeEpoch")
                 println("$TAG: refreshSunriseAndSchedule: Alarm scheduled for epoch $triggerTimeEpoch")
-                _uiEvent.emit(UiEvent.ShowToast("Alarm Set for ${sunriseStr} (minus ${currentSettings.offsetMinutes} mins)"))
+                if (showToast) {
+                    _uiEvent.emit(UiEvent.ShowToast("Alarm Set for ${sunriseStr} (minus ${currentSettings.offsetMinutes} mins)"))
+                }
             }.onFailure {
                 Log.e(TAG, "refreshSunriseAndSchedule: Failed to fetch sunrise time", it)
                 println("$TAG ERROR: refreshSunriseAndSchedule: Failed to fetch sunrise time - ${it.message}")

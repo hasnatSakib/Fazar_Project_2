@@ -7,6 +7,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.*
@@ -129,7 +130,7 @@ fun OnboardingPermissionScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
         PermissionItem(
-            icon = androidx.compose.material.icons.filled.List,
+            icon = Icons.Default.List,
             title = "Music & Audio",
             description = "Used to browse and play your custom alarm sounds."
         )
