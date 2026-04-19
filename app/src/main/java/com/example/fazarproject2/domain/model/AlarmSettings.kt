@@ -10,5 +10,6 @@ data class AlarmSettings(
     val customAudioUri: String? = null,
     val customAudioFileName: String? = null,
     val nextSunriseTime: String? = null, // Formatted string or timestamp
-    val nextAlarmTriggerTime: Long? = null // Epoch milliseconds
+    val nextAlarmTriggerTime: Long? = null, // Epoch milliseconds
+    val snoozeCount: Int = 0
 )

@@ -36,12 +36,14 @@ class ScheduleNextAlarmWorker @AssistedInject constructor(
 
         return result.fold(
             onSuccess = { response ->
-                val sunriseStr = response.results.sunrise
+                val sunriseStr = response.results.sunrise ?: return@fold Result.failure()
+                val dateStr = response.results.date
                 val currentSettings =
                     alarmRepository.getAlarmSettingsSync() ?: return@fold Result.failure()
 
                 val triggerEpoch = SunriseAlarmCalculator.calculateTriggerTime(
                     sunriseStr = sunriseStr,
+                    dateStr = dateStr,
                     offsetMinutes = currentSettings.offsetMinutes
                 )
 

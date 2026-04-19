@@ -8,7 +8,11 @@ import com.example.fazarproject2.domain.model.AudioFile
 import com.example.fazarproject2.domain.repository.AlarmRepository
 import com.example.fazarproject2.domain.repository.MediaRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -39,7 +43,10 @@ class SoundSelectionViewModel @Inject constructor(
             _isLoading.value = true
             try {
                 _systemSounds.value = mediaRepository.fetchSystemAudio()
-                Log.d(TAG, "scanSystemSounds: Scan complete, found ${_systemSounds.value.size} sounds")
+                Log.d(
+                    TAG,
+                    "scanSystemSounds: Scan complete, found ${_systemSounds.value.size} sounds"
+                )
                 println("$TAG: scanSystemSounds: Scan complete, found ${_systemSounds.value.size} sounds")
             } finally {
                 _isLoading.value = false

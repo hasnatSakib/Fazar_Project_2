@@ -29,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -37,21 +38,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.fazarproject2.domain.model.SunriseResults
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     onNavigateToSoundSelector: () -> Unit,
+    onNavigateToSunriseDetails: (SunriseResults) -> Unit,
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val settings by viewModel.alarmSettings.collectAsState()
+    val sunriseResults by viewModel.latestSunriseResults.collectAsState()
 
     LaunchedEffect(viewModel.uiEvent) {
         viewModel.uiEvent.collect { event ->
             when (event) {
                 is DashboardViewModel.UiEvent.ShowToast -> {
-                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, event.message, Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -118,7 +122,12 @@ fun DashboardScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             settings?.let { alarm ->
-                Card(modifier = Modifier.fillMaxWidth()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        sunriseResults?.let { onNavigateToSunriseDetails(it) }
+                    }
+                ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
                             text = if (alarm.isEnabled) "Alarm is ON" else "Alarm is OFF",
@@ -127,6 +136,15 @@ fun DashboardScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                         Text("Next Sunrise: ${alarm.nextSunriseTime ?: "Unknown"}")
                         Text("Triggering at offset: ${alarm.offsetMinutes} mins before")
+
+                        if (sunriseResults != null) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                "Click to see more details",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                 }
 
@@ -135,23 +153,62 @@ fun DashboardScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Enable Alarm")
+                    Text("Enable Alarm", style = MaterialTheme.typography.titleMedium)
                     Switch(
                         checked = alarm.isEnabled,
                         onCheckedChange = { viewModel.toggleAlarm(it) }
                     )
                 }
 
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Text("Offset: ${alarm.offsetMinutes} minutes")
-                    Slider(
-                        value = alarm.offsetMinutes.toFloat(),
-                        onValueChange = { viewModel.updateOffset(it.toInt()) },
-                        valueRange = 0f..120f,
-                        steps = 24
-                    )
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                "Wake up offset",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Text(
+                                "${alarm.offsetMinutes} mins before",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
+                        // Local state for smooth sliding
+                        var sliderPosition by remember(alarm.offsetMinutes) {
+                            mutableFloatStateOf(alarm.offsetMinutes.toFloat())
+                        }
+
+                        Slider(
+                            value = sliderPosition,
+                            onValueChange = { sliderPosition = it },
+                            onValueChangeFinished = {
+                                viewModel.updateOffset(sliderPosition.toInt())
+                            },
+                            valueRange = 0f..120f,
+                            steps = 23 // Steps every 5 minutes (0, 5, 10... 120)
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("0m", style = MaterialTheme.typography.labelSmall)
+                            Text("60m", style = MaterialTheme.typography.labelSmall)
+                            Text("120m", style = MaterialTheme.typography.labelSmall)
+                        }
+                    }
                 }
 
+                Text(
+                    "Alarm Sound",
+                    modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.titleMedium
+                )
                 Button(
                     onClick = onNavigateToSoundSelector,
                     modifier = Modifier.fillMaxWidth()

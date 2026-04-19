@@ -2,8 +2,8 @@ package com.example.fazarproject2.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.fazarproject2.data.local.daos.AlarmDao
 import com.example.fazarproject2.data.local.AlarmDatabase
+import com.example.fazarproject2.data.local.daos.AlarmDao
 import com.example.fazarproject2.data.local.daos.AudioDao
 import com.example.fazarproject2.data.remote.SunriseApi
 import com.example.fazarproject2.data.repositoryimpl.AlarmRepositoryImpl

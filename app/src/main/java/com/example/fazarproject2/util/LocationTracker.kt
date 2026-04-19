@@ -13,8 +13,7 @@ import javax.inject.Singleton
 
 @Singleton
 class LocationTracker @Inject constructor(
-    private val locationClient: FusedLocationProviderClient,
-    @ApplicationContext private val context: Context
+    private val locationClient: FusedLocationProviderClient
 ) {
     private val TAG = "LocationTracker"
 

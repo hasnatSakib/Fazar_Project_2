@@ -4,16 +4,19 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fazarproject2.domain.model.AlarmSettings
+import com.example.fazarproject2.domain.model.SunriseResults
 import com.example.fazarproject2.domain.repository.AlarmRepository
 import com.example.fazarproject2.domain.usecase.GetSunriseTimeUseCase
 import com.example.fazarproject2.util.LocationTracker
 import com.example.fazarproject2.util.SunriseAlarmCalculator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -29,6 +32,9 @@ class DashboardViewModel @Inject constructor(
 
     val alarmSettings: StateFlow<AlarmSettings?> = alarmRepository.getAlarmSettings()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    private val _latestSunriseResults = MutableStateFlow<SunriseResults?>(null)
+    val latestSunriseResults: StateFlow<SunriseResults?> = _latestSunriseResults.asStateFlow()
 
     private val _uiEvent = MutableSharedFlow<UiEvent>()
     val uiEvent: SharedFlow<UiEvent> = _uiEvent.asSharedFlow()
@@ -101,13 +107,29 @@ class DashboardViewModel @Inject constructor(
             val result = getSunriseTimeUseCase(location.latitude, location.longitude)
 
             result.onSuccess { response ->
-                val sunriseStr = response.results.sunrise // e.g. "6:15:23 AM"
-                Log.d(TAG, "refreshSunriseAndSchedule: Sunrise time from API: $sunriseStr")
-                println("$TAG: refreshSunriseAndSchedule: Sunrise time from API: $sunriseStr")
+               // val sunriseStr = response.results.sunrise // e.g. "6:15:23 AM"
+                //val dateStr = response.results.date
+                // MOCK DATA for testing: Overriding API response
+                // val sunriseStr = response.results.sunrise // e.g. "6:15:23 AM"
+                // val dateStr = response.results.date
+                val sunriseStr = "03:21:00 PM"
+                val dateStr = "2026-04-19"
+                // END MOCK DATA
+                if (sunriseStr == null) {
+                    Log.e(TAG, "refreshSunriseAndSchedule: Sunrise time is null in API response")
+                    println("$TAG ERROR: refreshSunriseAndSchedule: Sunrise time is null")
+                    return@onSuccess
+                }
+
+                Log.d(TAG, "refreshSunriseAndSchedule: Sunrise time from API: $sunriseStr, Date: $dateStr")
+                println("$TAG: refreshSunriseAndSchedule: Sunrise time from API: $sunriseStr, Date: $dateStr")
+
+                _latestSunriseResults.value = response.results
 
                 val currentSettings = alarmSettings.value ?: AlarmSettings()
                 val triggerTimeEpoch = SunriseAlarmCalculator.calculateTriggerTime(
                     sunriseStr = sunriseStr,
+                    dateStr = dateStr,
                     offsetMinutes = currentSettings.offsetMinutes
                 )
 
@@ -121,7 +143,8 @@ class DashboardViewModel @Inject constructor(
                 Log.d(TAG, "refreshSunriseAndSchedule: Alarm scheduled for epoch $triggerTimeEpoch")
                 println("$TAG: refreshSunriseAndSchedule: Alarm scheduled for epoch $triggerTimeEpoch")
                 if (showToast) {
-                    _uiEvent.emit(UiEvent.ShowToast("Alarm Set for ${sunriseStr} (minus ${currentSettings.offsetMinutes} mins)"))
+                    val dateInfo = if (!dateStr.isNullOrEmpty()) " on $dateStr" else ""
+                    _uiEvent.emit(UiEvent.ShowToast("Alarm Set for $sunriseStr$dateInfo (minus ${currentSettings.offsetMinutes} mins)"))
                 }
             }.onFailure {
                 Log.e(TAG, "refreshSunriseAndSchedule: Failed to fetch sunrise time", it)

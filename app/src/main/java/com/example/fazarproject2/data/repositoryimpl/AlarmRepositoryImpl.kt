@@ -23,10 +23,10 @@ class AlarmRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : AlarmRepository {
 
-    override fun getAlarmSettings(): Flow<AlarmSettings?> = 
+    override fun getAlarmSettings(): Flow<AlarmSettings?> =
         dao.getAlarmSettings().map { it?.toDomain() }
 
-    override suspend fun getAlarmSettingsSync(): AlarmSettings? = 
+    override suspend fun getAlarmSettingsSync(): AlarmSettings? =
         dao.getAlarmSettingsSync()?.toDomain()
 
     override suspend fun updateAlarmSettings(settings: AlarmSettings) {
@@ -36,7 +36,10 @@ class AlarmRepositoryImpl @Inject constructor(
 
     override suspend fun scheduleAlarm(triggerTimeMillis: Long) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(context, AlarmReceiver::class.java)
+        val intent = Intent(context, AlarmReceiver::class.java).apply {
+            // Important for background behavior:
+            action = "com.example.fazarproject2.ALARM_TRIGGER"
+        }
         val pendingIntent = PendingIntent.getBroadcast(
             context,
             ALARM_REQUEST_CODE,
@@ -45,11 +48,10 @@ class AlarmRepositoryImpl @Inject constructor(
         )
 
         log("Scheduling exact alarm for: $triggerTimeMillis")
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            triggerTimeMillis,
-            pendingIntent
-        )
+        
+        // Use setAlarmClock for maximum reliability even in Doze mode/background
+        val alarmClockInfo = AlarmManager.AlarmClockInfo(triggerTimeMillis, pendingIntent)
+        alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
     }
 
     override suspend fun cancelAlarm() {
