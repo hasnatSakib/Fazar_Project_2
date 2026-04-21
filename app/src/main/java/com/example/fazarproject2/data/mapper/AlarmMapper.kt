@@ -11,7 +11,8 @@ fun AlarmEntity.toDomain(): AlarmSettings {
         customAudioUri = customAudioUri,
         customAudioFileName = customAudioFileName,
         nextSunriseTime = nextSunriseTime,
-        nextAlarmTriggerTime = nextAlarmTriggerTime
+        nextAlarmTriggerTime = nextAlarmTriggerTime,
+        snoozeCount = snoozeCount
     )
 }
 
@@ -23,6 +24,7 @@ fun AlarmSettings.toEntity(): AlarmEntity {
         customAudioUri = customAudioUri,
         customAudioFileName = customAudioFileName,
         nextSunriseTime = nextSunriseTime,
-        nextAlarmTriggerTime = nextAlarmTriggerTime
+        nextAlarmTriggerTime = nextAlarmTriggerTime,
+        snoozeCount = snoozeCount
     )
 }

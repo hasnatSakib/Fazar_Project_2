@@ -19,6 +19,9 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -107,21 +110,27 @@ class DashboardViewModel @Inject constructor(
             val result = getSunriseTimeUseCase(location.latitude, location.longitude)
 
             result.onSuccess { response ->
-               // val sunriseStr = response.results.sunrise // e.g. "6:15:23 AM"
-                //val dateStr = response.results.date
-                // MOCK DATA for testing: Overriding API response
-                // val sunriseStr = response.results.sunrise // e.g. "6:15:23 AM"
-                // val dateStr = response.results.date
-                val sunriseStr = "03:21:00 PM"
-                val dateStr = "2026-04-19"
-                // END MOCK DATA
+
+                // MOCK DATA: Setting sunrise to 2 minutes from now for testing
+                val calendar = Calendar.getInstance()
+                calendar.add(Calendar.MINUTE, 2)
+
+                val mockSunriseStr = SimpleDateFormat("h:mm:ss a", Locale.US).format(calendar.time)
+                val mockDateStr = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(calendar.time)
+
+                val sunriseStr = mockSunriseStr // Overriding API: response.results.sunrise
+                val dateStr = mockDateStr       // Overriding API: response.results.date
+
                 if (sunriseStr == null) {
                     Log.e(TAG, "refreshSunriseAndSchedule: Sunrise time is null in API response")
                     println("$TAG ERROR: refreshSunriseAndSchedule: Sunrise time is null")
                     return@onSuccess
                 }
 
-                Log.d(TAG, "refreshSunriseAndSchedule: Sunrise time from API: $sunriseStr, Date: $dateStr")
+                Log.d(
+                    TAG,
+                    "refreshSunriseAndSchedule: Sunrise time from API: $sunriseStr, Date: $dateStr"
+                )
                 println("$TAG: refreshSunriseAndSchedule: Sunrise time from API: $sunriseStr, Date: $dateStr")
 
                 _latestSunriseResults.value = response.results
@@ -135,7 +144,8 @@ class DashboardViewModel @Inject constructor(
 
                 val updated = currentSettings.copy(
                     nextSunriseTime = sunriseStr,
-                    nextAlarmTriggerTime = triggerTimeEpoch
+                    nextAlarmTriggerTime = triggerTimeEpoch,
+                    snoozeCount = currentSettings.snoozeCount // Preserve the snooze count!
                 )
                 alarmRepository.updateAlarmSettings(updated)
                 alarmRepository.scheduleAlarm(updated.nextAlarmTriggerTime!!)

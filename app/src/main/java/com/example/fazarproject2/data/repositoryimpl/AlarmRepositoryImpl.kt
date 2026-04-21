@@ -39,6 +39,7 @@ class AlarmRepositoryImpl @Inject constructor(
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             // Important for background behavior:
             action = "com.example.fazarproject2.ALARM_TRIGGER"
+            addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
         }
         val pendingIntent = PendingIntent.getBroadcast(
             context,
@@ -48,7 +49,7 @@ class AlarmRepositoryImpl @Inject constructor(
         )
 
         log("Scheduling exact alarm for: $triggerTimeMillis")
-        
+
         // Use setAlarmClock for maximum reliability even in Doze mode/background
         val alarmClockInfo = AlarmManager.AlarmClockInfo(triggerTimeMillis, pendingIntent)
         alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)

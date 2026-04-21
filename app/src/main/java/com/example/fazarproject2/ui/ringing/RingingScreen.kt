@@ -34,7 +34,7 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun RingingScreen(
-    onDismiss: () -> Unit,
+    onFinish: () -> Unit,
     viewModel: RingingViewModel = hiltViewModel()
 ) {
     var currentTime by remember { mutableStateOf(LocalTime.now()) }
@@ -101,13 +101,16 @@ fun RingingScreen(
                     Button(
                         onClick = {
                             viewModel.snoozeAlarm()
-                            onDismiss() // Navigate away
+                            onFinish() // Navigate away
                         },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp)
                     ) {
-                        Text("Snooze ($nextSnoozeMins mins)", style = MaterialTheme.typography.titleLarge)
+                        Text(
+                            "Snooze ($nextSnoozeMins mins)",
+                            style = MaterialTheme.typography.titleLarge
+                        )
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                 }
@@ -115,7 +118,7 @@ fun RingingScreen(
                 Button(
                     onClick = {
                         viewModel.dismissAlarm()
-                        onDismiss()
+                        onFinish()
                     },
                     modifier = Modifier
                         .fillMaxWidth()

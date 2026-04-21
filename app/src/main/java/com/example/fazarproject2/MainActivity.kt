@@ -9,8 +9,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.example.fazarproject2.ui.dashboard.DashboardScreen
 import com.example.fazarproject2.domain.model.SunriseResults
+import com.example.fazarproject2.ui.dashboard.DashboardScreen
 import com.example.fazarproject2.ui.navigation.Dashboard
 import com.example.fazarproject2.ui.navigation.SoundSelector
 import com.example.fazarproject2.ui.navigation.SunriseDetails

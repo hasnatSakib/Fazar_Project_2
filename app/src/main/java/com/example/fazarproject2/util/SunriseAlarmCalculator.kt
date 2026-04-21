@@ -37,8 +37,10 @@ object SunriseAlarmCalculator {
 
         val triggerEpoch = triggerDateTime.toInstant().toEpochMilli()
 
-        println("$TAG: calculateTriggerTime: Sunrise API=$sunriseStr, Date API=$dateStr, Offset=$offsetMinutes. " +
-                "Final Trigger Time=$triggerDateTime ($triggerEpoch)")
+        println(
+            "$TAG: calculateTriggerTime: Sunrise API=$sunriseStr, Date API=$dateStr, Offset=$offsetMinutes. " +
+                    "Final Trigger Time=$triggerDateTime ($triggerEpoch)"
+        )
 
         return triggerEpoch
     }

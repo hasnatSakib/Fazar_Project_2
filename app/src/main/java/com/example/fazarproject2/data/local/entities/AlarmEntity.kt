@@ -11,5 +11,6 @@ data class AlarmEntity(
     val customAudioUri: String?,
     val customAudioFileName: String?,
     val nextSunriseTime: String?,
-    val nextAlarmTriggerTime: Long?
+    val nextAlarmTriggerTime: Long?,
+    val snoozeCount: Int = 0
 )
