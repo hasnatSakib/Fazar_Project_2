@@ -36,6 +36,13 @@ class RingingActivity : ComponentActivity() {
         }
 
         enableEdgeToEdge()
+
+        // Check if we should actually start the alarm
+        val isTriggered = intent.getBooleanExtra("EXTRA_TRIGGERED", false)
+        if (isTriggered) {
+            viewModel.onTriggerReceived()
+        }
+
         setContent {
             FazarProject2Theme {
                 RingingScreen(

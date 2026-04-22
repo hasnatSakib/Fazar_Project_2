@@ -2,6 +2,10 @@ package com.example.fazarproject2.ui.ringing
 
 import android.app.NotificationManager
 import android.content.Context
+import android.util.Log
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.MediaPlayer
@@ -64,7 +68,12 @@ class RingingViewModel @Inject constructor(
             val settings = alarmRepository.getAlarmSettingsSync()
             _snoozeCount.value = settings?.snoozeCount ?: 0
         }
-        startAlarm()
+    }
+
+    fun onTriggerReceived() {
+        if (mediaPlayer == null) {
+            startAlarm()
+        }
     }
 
     private fun startAlarm() {
@@ -182,17 +191,26 @@ class RingingViewModel @Inject constructor(
     }
 
     fun dismissAlarm() {
+        Log.d("RingingViewModel", "dismissAlarm() button clicked")
         stopPlayer()
         cancelNotification()
+
+        // Trigger WorkManager to schedule next alarm IMMEDIATELY on click
+        try {
+            Log.d("RingingViewModel", "Attempting to enqueue ScheduleNextAlarmWorker...")
+            val workRequest = OneTimeWorkRequestBuilder<ScheduleNextAlarmWorker>().build()
+            WorkManager.getInstance(context).enqueue(workRequest)
+            Log.d("RingingViewModel", "WorkManager enqueue call finished successfully")
+        } catch (e: Exception) {
+            Log.e("RingingViewModel", "Failed to enqueue work: ${e.message}")
+        }
+
         viewModelScope.launch {
             val settings = alarmRepository.getAlarmSettingsSync()
             if (settings != null) {
                 alarmRepository.updateAlarmSettings(settings.copy(snoozeCount = 0))
             }
             _uiEvent.emit(UiEvent.ShowToast("Alarm Dismissed"))
-            // Trigger WorkManager to schedule next alarm
-            val workRequest = OneTimeWorkRequestBuilder<ScheduleNextAlarmWorker>().build()
-            WorkManager.getInstance(context).enqueue(workRequest)
         }
     }
 
@@ -215,6 +233,9 @@ class RingingViewModel @Inject constructor(
 
             alarmRepository.updateAlarmSettings(settings.copy(snoozeCount = nextSnoozeCount))
             alarmRepository.scheduleAlarm(triggerTime)
+
+            val readableTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(triggerTime))
+            println("RingingViewModel: SNOOZE ALARM TRULY SET FOR: $readableTime")
 
             _uiEvent.emit(UiEvent.ShowToast("Snoozed for $snoozeMinutes minutes"))
         }
